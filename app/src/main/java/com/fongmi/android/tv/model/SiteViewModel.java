@@ -53,7 +53,11 @@ public class SiteViewModel extends ViewModel {
     }
 
     public void homeContent() {
-        execute(TaskType.RESULT, result, () -> SiteApi.homeContent(VodConfig.get().getHome()));
+        homeContent(VodConfig.get().getHome());
+    }
+
+    public void homeContent(Site site) {
+        execute(TaskType.RESULT, result, () -> SiteApi.homeContent(site));
     }
 
     public void categoryContent(String key, String tid, String page, boolean filter, HashMap<String, String> extend) {
