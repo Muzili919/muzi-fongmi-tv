@@ -9,6 +9,8 @@
     <string name="home_setting">設定</string>
     <string name="home_history">最近觀看</string>
     <string name="home_recommend">更新推薦</string>
+    <string name="vod_site">站源 · %s</string>
+    <string name="vod_site_hint">切換站源。按確定打開列表，按左右鍵直接切換。</string>
 
     <!-- Collect -->
     <string name="collect_result">「<xliff:g name="name">%s</xliff:g>」的搜尋結果</string>
