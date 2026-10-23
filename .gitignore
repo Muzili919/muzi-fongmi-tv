@@ -8,6 +8,8 @@ build/
 node_modules/
 
 *.jks
+*.keystore
+signing.env
 *.properties
 !runtime/gradle.properties
 lib-*.aar

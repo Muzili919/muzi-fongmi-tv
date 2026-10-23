@@ -6,8 +6,21 @@ plugins {
 }
 
 def localProps = new Properties()
-rootProject.file('local.properties').withInputStream {
-    localProps.load(it)
+def localFile = rootProject.file('local.properties')
+if (localFile.exists()) localFile.withInputStream { localProps.load(it) }
+
+def signingProps = new Properties()
+def signingFile = rootProject.file('signing.env')
+if (signingFile.exists()) signingFile.withInputStream { signingProps.load(it) }
+
+def storePath = signingProps.getProperty('STORE_FILE') ?: localProps.getProperty('storeFile')
+def storePasswordValue = signingProps.getProperty('STORE_PASSWORD') ?: localProps.getProperty('storePassword')
+def keyAliasValue = signingProps.getProperty('KEY_ALIAS') ?: localProps.getProperty('keyAlias')
+def keyPasswordValue = signingProps.getProperty('KEY_PASSWORD') ?: localProps.getProperty('keyPassword') ?: storePasswordValue
+def resolvedStore = null
+if (storePath) {
+    def rootStore = rootProject.file(storePath)
+    resolvedStore = rootStore.exists() ? rootStore : file(storePath)
 }
 
 android {
@@ -56,21 +69,23 @@ android {
 
     signingConfigs {
         release {
-            storeFile file(localProps['storeFile'])
-            keyAlias localProps['keyAlias']
-            keyPassword localProps['storePassword']
-            storePassword localProps['storePassword']
+            if (resolvedStore != null) {
+                storeFile resolvedStore
+                keyAlias keyAliasValue
+                keyPassword keyPasswordValue
+                storePassword storePasswordValue
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.release
+            if (resolvedStore != null) signingConfig = signingConfigs.release
         }
         release {
             minifyEnabled = true
             shrinkResources = true
-            signingConfig = signingConfigs.release
+            if (resolvedStore != null) signingConfig = signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
