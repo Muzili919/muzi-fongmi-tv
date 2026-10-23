@@ -10,8 +10,8 @@
 
 | 项目 | 值 |
 |---|---|
-| 分支 | `muzi`（基于上游 `fongmi` 分支 `f98a376ca`） |
-| versionName / versionCode | `5.7.8-muzi.1` / `578001` |
+| 分支 | `muzi`（基于上游 `fongmi` 分支 `f98a376ca`，上游版本 5.8.0 / 580） |
+| versionName / versionCode | `5.8.0-muzi.1` / `580001` |
 | 包名 | `com.fongmi.android.tv`（与上游相同） |
 | 显示名 | 蜂蜜 |
 | 最低系统 | Android 7.0（API 24，跟随上游） |
@@ -24,7 +24,7 @@ Android 6.0 的老电视装不了这一版，请继续使用 4.0.7 木子版（4
 1. **点播页内切换站点**：点播页（VodActivity）新增站点按钮，可打开站点列表或切到下一个可见站点；新站点分类加载完成后再切换，保留分类行。
 2. **显示名改为「蜂蜜」**（简体、繁体、默认语言）。
 3. **签名配置**：签名不再强制读 `local.properties`，按以下顺序取，**都不入库**：环境变量 `MUZI_KEYSTORE` / `MUZI_KEYSTORE_PASSWORD` / `MUZI_KEY_ALIAS` / `MUZI_KEY_PASSWORD` → 根目录 `signing.env`（`STORE_FILE` / `STORE_PASSWORD` / `KEY_ALIAS` / `KEY_PASSWORD`）→ `local.properties`。都没有时不签名。`.gitignore` 增加 `*.keystore`、`signing.env`。
-4. **版本号**改为 `5.7.8-muzi.1` / `578001`。该版本名不是 `X.Y.Z` 格式，App 内置的「检查更新」（读 FongMi/Release）会跳过，不会把官方签名的包推给本版用户。本版更新由木子桌面或手动安装提供。
+4. **版本号**改为 `5.8.0-muzi.1` / `580001`。该版本名不是 `X.Y.Z` 格式，App 内置的「检查更新」（读 FongMi/Release）会跳过，不会把官方签名的包推给本版用户。本版更新由木子桌面或手动安装提供。
 
 ## 编译
 
