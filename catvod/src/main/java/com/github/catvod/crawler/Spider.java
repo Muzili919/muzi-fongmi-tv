@@ -99,6 +99,16 @@ public abstract class Spider {
         return null;
     }
 
+    public void clearResponseCache() {
+        Net client = net;
+        if (client == null) return;
+        try {
+            client.clearCache();
+        } catch (RuntimeException e) {
+            SpiderDebug.log(e);
+        }
+    }
+
     public void destroy() {
     }
 }

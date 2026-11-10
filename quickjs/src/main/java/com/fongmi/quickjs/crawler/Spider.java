@@ -126,6 +126,13 @@ public class Spider extends com.github.catvod.crawler.Spider {
     }
 
     @Override
+    public void clearResponseCache() {
+        super.clearResponseCache();
+        Global current = global;
+        if (current != null) current.clearResponseCache();
+    }
+
+    @Override
     public String homeContent(boolean filter) throws Exception {
         return (String) call("home", filter);
     }

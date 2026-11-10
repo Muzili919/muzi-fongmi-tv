@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Constant;
+import com.fongmi.android.tv.api.CatalogRefresh;
 import com.fongmi.android.tv.api.SiteApi;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Result;
@@ -53,7 +54,12 @@ public class SiteViewModel extends ViewModel {
     }
 
     public void homeContent() {
-        execute(TaskType.RESULT, result, () -> SiteApi.homeContent(VodConfig.get().getHome()));
+        execute(TaskType.RESULT, result, () -> {
+            Site site = VodConfig.get().getHome();
+            Result home = SiteApi.homeContent(site);
+            CatalogRefresh.prefetch(site, home);
+            return home;
+        });
     }
 
     public void categoryContent(String key, String tid, String page, boolean filter, HashMap<String, String> extend) {

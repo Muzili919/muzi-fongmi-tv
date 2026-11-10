@@ -246,6 +246,16 @@ public final class Net implements AutoCloseable {
 
     public void clearCache() {
         cache.clear(null);
+        List<Net> sessions;
+        synchronized (lock) {
+            sessions = new ArrayList<>(children);
+        }
+        for (Net session : sessions) {
+            try {
+                session.clearCache();
+            } catch (RuntimeException ignored) {
+            }
+        }
     }
 
     public String json(String url, String options) {
