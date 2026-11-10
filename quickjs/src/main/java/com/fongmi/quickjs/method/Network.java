@@ -202,6 +202,19 @@ final class Network {
         cancelSleeps(net);
     }
 
+    void clearResponseCache() {
+        try {
+            net.clearCache();
+        } catch (RuntimeException ignored) {
+        }
+        for (Net session : sessions.values()) {
+            try {
+                session.clearCache();
+            } catch (RuntimeException ignored) {
+            }
+        }
+    }
+
     void close() {
         net.close();
     }

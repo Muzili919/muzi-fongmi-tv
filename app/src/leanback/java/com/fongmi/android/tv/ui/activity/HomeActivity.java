@@ -100,6 +100,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private boolean actionReady;
     private Result mResult;
     private Clock mClock;
+    private boolean homeLoaded;
 
     private Site getHome() {
         return VodConfig.get().getHome();
@@ -201,6 +202,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         mAdapter.remove("progress");
         addVideo(mResult = result);
         Cache.clear().put(result);
+        homeLoaded = true;
     }
 
     private void setAdapter() {
@@ -504,6 +506,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     protected void onResume() {
         super.onResume();
         mClock.start();
+        if (homeLoaded && !VodConfig.get().getSites().isEmpty()) getVideo();
     }
 
     @Override

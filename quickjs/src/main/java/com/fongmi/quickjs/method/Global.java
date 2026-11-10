@@ -110,6 +110,11 @@ public class Global {
         network.close();
     }
 
+    public void clearResponseCache() {
+        if (destroyed) return;
+        network.clearResponseCache();
+    }
+
     private Boolean closeSession(Integer id) {
         Net session = network.removeSession(id);
         sockets.markClosing(session);

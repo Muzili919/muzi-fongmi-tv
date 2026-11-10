@@ -65,6 +65,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     }
 
     private FragmentStateManager mManager;
+    private boolean configLoaded;
     private ActivityHomeBinding mBinding;
     private Intent pendingAction;
     private boolean actionReady;
@@ -227,6 +228,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     public void onConfigEvent(ConfigEvent event) {
         switch (event.type()) {
             case VOD:
+                configLoaded = true;
                 RefreshEvent.home();
                 break;
             case COMMON:
@@ -255,6 +257,12 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         if (item.getItemId() == R.id.vod) return mManager.change(0);
         if (item.getItemId() == R.id.live) return openLive();
         return false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (configLoaded && !VodConfig.get().getSites().isEmpty()) RefreshEvent.home();
     }
 
     @Override

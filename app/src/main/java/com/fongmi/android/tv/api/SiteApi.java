@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.Call;
 import okhttp3.Response;
@@ -44,10 +45,17 @@ public class SiteApi {
 
     public static final String LOCAL = "local_file";
     public static final String PUSH = "push_agent";
+    private static final ConcurrentHashMap<String, Object> CATALOG_LOCKS = new ConcurrentHashMap<>();
 
     public static String call(@NonNull Site site, @NonNull ArrayMap<String, String> params) throws IOException {
+        return call(site, params, false);
+    }
+
+    private static String call(@NonNull Site site, @NonNull ArrayMap<String, String> params, boolean catalog) throws IOException {
         if (!site.getExt().isEmpty()) params.put("extend", site.getExt());
-        Call call = site.getExt().length() <= 1000 ? OkHttp.newCall(site.getApi(), site.getHeader(), params) : OkHttp.newCall(site.getApi(), site.getHeader(), OkHttp.toBody(params));
+        Call call;
+        if (site.getExt().length() <= 1000) call = catalog ? OkHttp.newCatalogCall(site.getApi(), site.getHeader(), params) : OkHttp.newCall(site.getApi(), site.getHeader(), params);
+        else call = catalog ? OkHttp.newCatalogCall(site.getApi(), site.getHeader(), OkHttp.toBody(params)) : OkHttp.newCall(site.getApi(), site.getHeader(), OkHttp.toBody(params));
         try (Response response = call.execute()) {
             return response.body().string();
         }
@@ -55,6 +63,10 @@ public class SiteApi {
 
     private static boolean isSpider(@NonNull Site site) {
         return site.getType() == 3;
+    }
+
+    private static Object catalogLock(String key) {
+        return CATALOG_LOCKS.computeIfAbsent(key == null ? "" : key, ignored -> new Object());
     }
 
     private static String ac(int type) {
@@ -67,8 +79,14 @@ public class SiteApi {
         if (isSpider(site)) {
             Spider spider = site.recent().spider();
             boolean crash = Prefers.getBoolean("crash");
-            String home = crash ? "" : spider.homeContent(true);
-            String video = crash ? "" : spider.homeVideoContent();
+            String home;
+            String video;
+            synchronized (catalogLock(site.getKey())) {
+                spider.clearResponseCache();
+                home = crash ? "" : spider.homeContent(true);
+                spider.clearResponseCache();
+                video = crash ? "" : spider.homeVideoContent();
+            }
             Prefers.put("crash", false);
             SpiderDebug.log("home", home);
             SpiderDebug.log("homeVideo", video);
@@ -78,11 +96,11 @@ public class SiteApi {
         } else if (site.getType() == 4) {
             ArrayMap<String, String> params = new ArrayMap<>();
             params.put("filter", "true");
-            String homeContent = call(site.fetchExt(), params);
+            String homeContent = call(site.fetchExt(), params, true);
             SpiderDebug.log("home", homeContent);
             result = Result.fromJson(homeContent);
         } else {
-            try (Response response = OkHttp.newCall(site.getApi(), site.getHeader()).execute()) {
+            try (Response response = OkHttp.newCatalogCall(site.getApi(), site.getHeader()).execute()) {
                 String homeContent = response.body().string();
                 SpiderDebug.log("home", homeContent);
                 result = fetchPic(site, Result.fromType(site.getType(), homeContent));
@@ -99,7 +117,11 @@ public class SiteApi {
         boolean spider = isSpider(site);
         String categoryContent;
         if (spider) {
-            categoryContent = site.recent().spider().categoryContent(tid, page, filter, extend);
+            Spider spiderClient = site.recent().spider();
+            synchronized (catalogLock(key)) {
+                spiderClient.clearResponseCache();
+                categoryContent = spiderClient.categoryContent(tid, page, filter, extend);
+            }
         } else {
             ArrayMap<String, String> params = new ArrayMap<>();
             if (site.getType() == 1 && !extend.isEmpty()) params.put("f", App.gson().toJson(extend));
@@ -107,7 +129,7 @@ public class SiteApi {
             params.put("ac", ac(site.getType()));
             params.put("t", tid);
             params.put("pg", page);
-            categoryContent = call(site, params);
+            categoryContent = call(site, params, true);
         }
         SpiderDebug.log("category", categoryContent);
         return spider ? Result.fromJson(categoryContent) : Result.fromType(site.getType(), categoryContent);
@@ -312,7 +334,7 @@ public class SiteApi {
         ArrayMap<String, String> params = new ArrayMap<>();
         params.put("ac", ac(site.getType()));
         params.put("ids", TextUtils.join(",", ids));
-        try (Response response = OkHttp.newCall(site.getApi(), site.getHeader(), params).execute()) {
+        try (Response response = OkHttp.newCatalogCall(site.getApi(), site.getHeader(), params).execute()) {
             result.setList(Result.fromType(site.getType(), response.body().string()).getList());
             return result;
         }

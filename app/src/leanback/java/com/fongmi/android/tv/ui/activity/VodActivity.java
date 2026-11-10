@@ -18,6 +18,7 @@ import androidx.viewbinding.ViewBinding;
 import androidx.viewpager.widget.ViewPager;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.api.CatalogRefresh;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Class;
 import com.fongmi.android.tv.bean.Result;
@@ -39,6 +40,7 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
     private ActivityVodBinding mBinding;
     private TypeAdapter mAdapter;
     private View mOldView;
+    private boolean catalogResumed;
 
     public static void start(Activity activity, Result result) {
         start(activity, VodConfig.get().getHome().getKey(), result);
@@ -163,6 +165,20 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (KeyUtil.isMenuKey(event)) updateFilter();
         return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!catalogResumed) {
+            catalogResumed = true;
+            return;
+        }
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+            if (fragment instanceof FolderFragment folder) folder.onRefresh();
+        }
+        Result result = getResult();
+        if (result != null) CatalogRefresh.prefetch(VodConfig.get().getSite(getKey()), result);
     }
 
     @Override
